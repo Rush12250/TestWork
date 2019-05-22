@@ -1,0 +1,4 @@
+[staging]
+staging-1               ansible_host=10.230.3.1         ansible_port=22
+staging-2               ansible_host=10.230.3.2         ansible_port=5000
+staging-3               ansible_host=10.230.3.3         ansible_port=5000

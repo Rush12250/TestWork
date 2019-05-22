@@ -1,0 +1,40 @@
+---
+
+- name: Setup javafile
+  hosts: staging
+  remote_user: root
+  become: yes
+
+  tasks:
+    - name: "Docker_Login"
+      shell:
+        cmd: "docker login -u gitlab-ci-token -p "{{ ('env', 'CI_JOB_TOKEN') }}" gitlab.local"
+
+    - name: "Docker-compose Pull images"
+        shell:
+          cmd: "docker-compose {{ docker_compose_switch }} pull"
+          chdir: "{{ project_directory }}"
+        args:
+          warn: False
+        become: "{{ docker_become }}"
+        when: pull_images
+
+    - name: "Stop, build and Start Docker Compose {{ project_directory }}: {{ '; '.join(docker_compose_files) }}"
+      docker_service:
+        project_src: "{{ project_directory }}"
+        project_name: "{{ project_name | default(omit) }}"
+        build: False
+        files: "{{ docker_compose_files }}"
+        remove_volumes: "{{ remove_volumes | default(no) }}"
+        state: "{{ item }}"
+      become: "{{ docker_become }}"
+      with_items:
+      - absent
+      - present
+
+    - name: Wait for server to pass health-checks
+      health_check:
+        url: http://127.0.0.1:8080
+        delay_between_tries: 5
+        max_retries: 20
+        expected_status: '200'

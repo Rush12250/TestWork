@@ -1,0 +1,17 @@
+version: "3"
+
+services:
+  javafile:
+    restart: always
+    build: .
+    command: /usr/bin/java -jar /opt/application/app.jar
+    container_name: javafile
+    image: javafile
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "20m"
+        max-file: "5"
+
+    ports:
+    - "80:80"
